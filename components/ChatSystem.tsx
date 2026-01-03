@@ -1,12 +1,42 @@
 
-import React, { useState } from 'react';
-import { Send, Smile, Paperclip, MoreVertical, Search, Phone, Video, ChevronLeft } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { 
+  Send, Smile, Paperclip, MoreVertical, Search, 
+  Phone, Video, ChevronLeft, Link as LinkIcon, 
+  X, CheckSquare, Layers, ExternalLink
+} from 'lucide-react';
 import { MOCK_USERS } from '../constants';
+import { User } from '../types';
 
-const ChatSystem: React.FC = () => {
+interface ChatSystemProps {
+  initialLinkedTask?: { id: string; title: string };
+  onClearLinkedTask?: () => void;
+}
+
+const ChatSystem: React.FC<ChatSystemProps> = ({ initialLinkedTask, onClearLinkedTask }) => {
   const [activeChat, setActiveChat] = useState(MOCK_USERS[0]);
   const [message, setMessage] = useState('');
   const [showContactList, setShowContactList] = useState(true);
+  const [linkedTask, setLinkedTask] = useState<{ id: string; title: string } | null>(initialLinkedTask || null);
+  const [showTaskSelector, setShowTaskSelector] = useState(false);
+
+  useEffect(() => {
+    if (initialLinkedTask) {
+      setLinkedTask(initialLinkedTask);
+    }
+  }, [initialLinkedTask]);
+
+  const handleSendMessage = () => {
+    if (!message.trim()) return;
+    // Lógica de envio simulada
+    console.log('Enviando mensagem vinculada à tarefa:', linkedTask?.id, message);
+    setMessage('');
+  };
+
+  const handleLinkTask = (taskId: string, title: string) => {
+    setLinkedTask({ id: taskId, title });
+    setShowTaskSelector(false);
+  };
 
   return (
     <div className="h-full flex flex-col md:flex-row bg-white dark:bg-nexus-darkCard rounded-4xl border border-gray-100 dark:border-nexus-darkBorder overflow-hidden shadow-2xl transition-all">
@@ -48,7 +78,7 @@ const ChatSystem: React.FC = () => {
       </div>
 
       {/* Main Chat Area */}
-      <div className={`${!showContactList ? 'flex' : 'hidden'} md:flex flex-1 flex-col h-full bg-white dark:bg-nexus-darkCard`}>
+      <div className={`${!showContactList ? 'flex' : 'hidden'} md:flex flex-1 flex-col h-full bg-white dark:bg-nexus-darkCard relative`}>
         {/* Chat Header */}
         <div className="px-6 py-5 border-b border-gray-100 dark:border-nexus-darkBorder flex items-center justify-between bg-white dark:bg-nexus-darkCard sticky top-0 z-10">
           <div className="flex items-center gap-4">
@@ -65,11 +95,70 @@ const ChatSystem: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-4 text-nexus-grayLight dark:text-gray-400">
+            <button 
+              onClick={() => setShowTaskSelector(!showTaskSelector)}
+              className={`p-2.5 rounded-xl transition-all flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${linkedTask ? 'bg-orange-50 dark:bg-orange-900/20 text-nexus-orange' : 'hover:bg-gray-50 dark:hover:bg-nexus-darkBg hover:text-nexus-orange'}`}
+              title="Vincular Tarefa"
+            >
+              <LinkIcon size={18} />
+              <span className="hidden lg:block">{linkedTask ? 'Alterar Vínculo' : 'Vincular Tarefa'}</span>
+            </button>
             <button className="p-2.5 hover:bg-gray-50 dark:hover:bg-nexus-darkBg rounded-xl hover:text-nexus-orange transition-all"><Phone size={20} /></button>
             <button className="p-2.5 hover:bg-gray-50 dark:hover:bg-nexus-darkBg rounded-xl hover:text-nexus-orange transition-all"><Video size={20} /></button>
             <button className="p-2.5 hover:bg-gray-50 dark:hover:bg-nexus-darkBg rounded-xl hover:text-nexus-orange transition-all"><MoreVertical size={20} /></button>
           </div>
         </div>
+
+        {/* Linked Task Context Header */}
+        {linkedTask && (
+          <div className="px-6 py-3 bg-orange-50/50 dark:bg-orange-900/10 border-b border-orange-100 dark:border-orange-900/20 flex items-center justify-between animate-in slide-in-from-top-2">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-nexus-orange rounded-xl text-white shadow-sm">
+                <CheckSquare size={14} />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[8px] font-black text-nexus-orange uppercase tracking-widest leading-none mb-1">Contexto de Tarefa</span>
+                <span className="text-xs font-black text-nexus-grayDark dark:text-white tracking-tight">{linkedTask.title}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button className="p-2 text-nexus-grayLight dark:text-gray-500 hover:text-nexus-orange transition-colors">
+                <ExternalLink size={14} />
+              </button>
+              <button 
+                onClick={() => { setLinkedTask(null); onClearLinkedTask?.(); }}
+                className="p-2 text-nexus-grayLight dark:text-gray-500 hover:text-red-500 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Task Selector Dropdown Overlay */}
+        {showTaskSelector && (
+          <div className="absolute top-20 right-6 w-72 bg-white dark:bg-nexus-darkCard border border-gray-100 dark:border-nexus-darkBorder rounded-3xl shadow-2xl z-20 animate-in fade-in zoom-in-95 overflow-hidden">
+            <div className="p-4 border-b border-gray-50 dark:border-nexus-darkBorder bg-gray-50/50 dark:bg-black/20 flex items-center justify-between">
+              <span className="text-[9px] font-black text-nexus-grayLight dark:text-gray-400 uppercase tracking-widest">Selecionar Tarefa</span>
+              <button onClick={() => setShowTaskSelector(false)}><X size={14} className="text-gray-400" /></button>
+            </div>
+            <div className="max-h-60 overflow-y-auto p-2 space-y-1 custom-scrollbar">
+              {[
+                { id: '1', title: 'Migração VPS: Docker Swarm' },
+                { id: '2', title: 'Refatoração UI: Chat Atemporal' },
+                { id: '3', title: 'Setup NocoDB Relations' }
+              ].map(t => (
+                <button 
+                  key={t.id}
+                  onClick={() => handleLinkTask(t.id, t.title)}
+                  className="w-full text-left p-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-nexus-darkBg text-xs font-bold text-nexus-grayDark dark:text-gray-300 transition-all flex items-center gap-3"
+                >
+                  <Layers size={14} className="text-nexus-orange" /> {t.title}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-gray-50/20 dark:bg-nexus-darkBg/20">
@@ -107,10 +196,14 @@ const ChatSystem: React.FC = () => {
               type="text" 
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Digite sua mensagem para a equipe..." 
+              onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+              placeholder={linkedTask ? `Comentando em: ${linkedTask.title}...` : "Digite sua mensagem..."} 
               className="flex-1 bg-transparent border-none py-2 text-sm focus:outline-none dark:text-white font-medium"
             />
-            <button className="nexus-gradient p-3 rounded-2xl text-white shadow-xl hover:scale-105 transition-all active:scale-95 group-hover:rotate-6">
+            <button 
+              onClick={handleSendMessage}
+              className="nexus-gradient p-3 rounded-2xl text-white shadow-xl hover:scale-105 transition-all active:scale-95 group-hover:rotate-6"
+            >
               <Send size={20} />
             </button>
           </div>

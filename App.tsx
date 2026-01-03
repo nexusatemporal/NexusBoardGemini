@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import TaskManager from './components/TaskManager';
@@ -12,15 +12,66 @@ import CalendarView from './components/CalendarView';
 import TeamManagement from './components/TeamManagement';
 import Settings from './components/Settings';
 import Login from './components/Login';
-import { MOCK_USERS } from './constants';
+import NotificationCenter from './components/NotificationCenter';
+import { MOCK_USERS, MOCK_NOTIFICATIONS } from './constants';
 import { Bell, Search, Moon, Sun, Zap, Menu, X } from 'lucide-react';
+import { Notification, Task, TaskStatus } from './types';
+
+// Mock inicial estendido para o App
+const INITIAL_TASKS: any[] = [
+  {
+    id: '1',
+    emoji: '🛠️',
+    title: 'Migração VPS: Cluster Docker Swarm',
+    description: 'Implementar o cluster Swarm e orquestrador Traefik para board.nexusatemporal.com.',
+    status: TaskStatus.IN_PROGRESS,
+    priority: 'high',
+    assignees: ['1', '3'],
+    tags: ['DevOps', 'Infra'],
+    projectRelation: 'Nexus Ops Core',
+    points: 8,
+    progress: 65,
+    dueDate: '2024-12-30',
+    subtasks: [
+      { id: 's1', title: 'Configurar Traefik', completed: true },
+      { id: 's2', title: 'Deploy Portainer', completed: false }
+    ],
+    lastComment: 'Certificados SSL ativos.',
+    coverGradient: 'linear-gradient(135deg, #FF9D00 0%, #D93D00 100%)'
+  },
+  {
+    id: '2',
+    emoji: '🎨',
+    title: 'Design System: Tokens Atemporais',
+    description: 'Definição de cores, tipografia e componentes core para o dashboard.',
+    status: TaskStatus.TODO,
+    priority: 'medium',
+    assignees: ['2'],
+    tags: ['Design', 'UI'],
+    projectRelation: 'Nexus Brand',
+    points: 5,
+    progress: 0,
+    dueDate: '2024-12-25',
+    subtasks: [
+      { id: 's3', title: 'Definir Paleta', completed: false },
+      { id: 's4', title: 'Componentes Button', completed: false }
+    ],
+    coverGradient: 'linear-gradient(135deg, #4B4B4D 0%, #0F0F0F 100%)'
+  }
+];
 
 const App: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [darkMode, setDarkMode] = useState(true); // Iniciando em dark mode como padrão moderno
+  const [darkMode, setDarkMode] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
   const [userProfile] = useState(MOCK_USERS[2]);
+  const [contextTask, setContextTask] = useState<{ id: string; title: string } | null>(null);
+  
+  // CRUD State
+  const [tasks, setTasks] = useState<any[]>(INITIAL_TASKS);
 
   useEffect(() => {
     if (darkMode) {
@@ -30,11 +81,62 @@ const App: React.FC = () => {
     }
   }, [darkMode]);
 
+  const notifRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setIsNotifOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleMarkAsRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+  };
+
+  const handleClearAll = () => {
+    setNotifications([]);
+    setIsNotifOpen(false);
+  };
+
+  const handleStartChatFromTask = (taskId: string, title: string) => {
+    setContextTask({ id: taskId, title });
+    setActiveTab('chat');
+  };
+
+  // CRUD Operations
+  const handleSaveTask = (task: any) => {
+    setTasks(prev => {
+      const exists = prev.find(t => t.id === task.id);
+      if (exists) {
+        return prev.map(t => t.id === task.id ? task : t);
+      }
+      return [...prev, task];
+    });
+  };
+
+  const handleDeleteTask = (id: string) => {
+    setTasks(prev => prev.filter(t => t.id !== id));
+  };
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
   const renderContent = () => {
     const views: Record<string, React.ReactNode> = {
-      dashboard: <Dashboard />,
-      tasks: <TaskManager />,
-      chat: <ChatSystem />,
+      dashboard: <Dashboard tasks={tasks} />,
+      tasks: (
+        <TaskManager 
+          tasks={tasks} 
+          setTasks={setTasks} 
+          onSaveTask={handleSaveTask} 
+          onDeleteTask={handleDeleteTask}
+          onStartChatWithTask={handleStartChatFromTask} 
+        />
+      ),
+      chat: <ChatSystem initialLinkedTask={contextTask || undefined} onClearLinkedTask={() => setContextTask(null)} />,
       ai: <AIWorkspace />,
       whiteboard: <Whiteboard />,
       database: <DatabaseView />,
@@ -61,7 +163,6 @@ const App: React.FC = () => {
 
   return (
     <div className={`flex min-h-screen bg-nexus-bg dark:bg-nexus-darkBg transition-colors duration-300`}>
-      {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
@@ -69,13 +170,11 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* Sidebar - Responsive */}
       <div className={`fixed inset-y-0 left-0 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 md:static md:block z-50 transition-transform duration-300 ease-in-out`}>
         <Sidebar activeTab={activeTab} setActiveTab={(tab) => { setActiveTab(tab); setIsSidebarOpen(false); }} onLogout={() => setIsLoggedIn(false)} />
       </div>
       
       <main className="flex-1 flex flex-col h-screen overflow-hidden w-full relative">
-        {/* Top Header */}
         <header className="flex items-center justify-between px-4 md:px-8 py-4 md:py-6 flex-shrink-0 bg-nexus-bg/80 dark:bg-nexus-darkBg/80 backdrop-blur-md sticky top-0 z-30">
           <div className="flex items-center gap-4">
             <button 
@@ -106,10 +205,26 @@ const App: React.FC = () => {
               <input type="text" placeholder="Busca global..." className="bg-transparent border-none text-xs focus:outline-none w-24 md:w-40 dark:text-white" />
             </div>
 
-            <button className="p-2.5 bg-white dark:bg-nexus-darkCard border border-gray-200 dark:border-nexus-darkBorder rounded-2xl text-nexus-grayLight dark:text-gray-400 hover:text-nexus-orange transition-all shadow-sm relative">
-              <Bell size={20} />
-              <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-nexus-orange border-2 border-white dark:border-nexus-darkCard rounded-full"></span>
-            </button>
+            <div className="relative" ref={notifRef}>
+              <button 
+                onClick={() => setIsNotifOpen(!isNotifOpen)}
+                className={`p-2.5 bg-white dark:bg-nexus-darkCard border border-gray-200 dark:border-nexus-darkBorder rounded-2xl text-nexus-grayLight dark:text-gray-400 hover:text-nexus-orange transition-all shadow-sm relative ${isNotifOpen ? 'ring-2 ring-orange-100 dark:ring-orange-900/20 text-nexus-orange' : ''}`}
+              >
+                <Bell size={20} />
+                {unreadCount > 0 && (
+                  <span className="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-nexus-orange border-2 border-white dark:border-nexus-darkCard rounded-full animate-pulse"></span>
+                )}
+              </button>
+              
+              {isNotifOpen && (
+                <NotificationCenter 
+                  notifications={notifications} 
+                  onMarkAsRead={handleMarkAsRead}
+                  onClearAll={handleClearAll}
+                  onClose={() => setIsNotifOpen(false)}
+                />
+              )}
+            </div>
 
             <div 
               onClick={() => setActiveTab('settings')}
@@ -124,12 +239,10 @@ const App: React.FC = () => {
           </div>
         </header>
 
-        {/* Content Area */}
         <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-4 md:px-8 pb-10 page-transition">
           {renderContent()}
         </div>
         
-        {/* Bottom Floating Stats - Responsive Hidden on small */}
         <div className="hidden md:flex fixed bottom-6 right-6 items-center gap-2 bg-nexus-grayDark/90 dark:bg-black/90 backdrop-blur-md text-white px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest shadow-2xl z-40 border border-white/10 transition-all">
            <Zap className="text-nexus-orange" size={14} /> Nexus Cluster: 100% Healthy
         </div>

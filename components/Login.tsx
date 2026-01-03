@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
-import { Mail, Lock, ChevronRight, Github, Chrome, AlertCircle } from 'lucide-react';
+import { Mail, Lock, ChevronRight, AlertCircle } from 'lucide-react';
 
 interface LoginProps {
   onLogin: () => void;
 }
 
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
+const Login: React.FC = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -49,14 +49,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         </div>
 
         {/* Right Side - Form */}
-        <div className="p-8 sm:p-16 lg:p-24 flex flex-col justify-center">
+        <div className="p-8 sm:p-16 lg:p-24 flex flex-col justify-center bg-white">
           <div className="mb-10 text-center lg:text-left">
             <h2 className="text-3xl font-extrabold text-nexus-grayDark mb-2">Bem-vindo</h2>
             <p className="text-nexus-grayLight">Entre com suas credenciais Nexus para continuar.</p>
           </div>
 
-          <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); onLogin(); }}>
-            <div className="space-y-1">
+          <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); onLogin(); }}>
+            <div className="space-y-2">
               <label className="text-xs font-bold text-nexus-grayDark uppercase tracking-wider ml-1">E-mail Corporativo</label>
               <div className="relative group">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-nexus-orange transition-colors" size={20} />
@@ -64,14 +64,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   type="email" 
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="seuemail@nexusatemporal.com"
-                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-300 outline-none transition-all text-sm"
+                  placeholder="contato@nexusatemporal.com.br"
+                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-300 outline-none transition-all text-sm text-nexus-grayDark font-medium"
                   required
                 />
               </div>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
                 <label className="text-xs font-bold text-nexus-grayDark uppercase tracking-wider">Senha</label>
                 <a href="#" className="text-xs font-semibold text-nexus-orange hover:text-nexus-orangeDark transition-colors">Esqueceu a senha?</a>
@@ -83,7 +83,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
-                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-300 outline-none transition-all text-sm"
+                  className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-100 rounded-2xl focus:bg-white focus:ring-4 focus:ring-orange-100 focus:border-orange-300 outline-none transition-all text-sm text-nexus-grayDark font-medium"
                   required
                 />
               </div>
@@ -97,22 +97,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             </button>
           </form>
 
-          <div className="my-8 flex items-center gap-4">
-            <div className="flex-1 h-px bg-gray-100"></div>
-            <span className="text-xs text-nexus-grayLight font-bold uppercase tracking-widest">ou entrar com</span>
-            <div className="flex-1 h-px bg-gray-100"></div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <button className="flex items-center justify-center gap-3 py-3 border border-gray-200 rounded-2xl hover:bg-gray-50 transition-all font-semibold text-sm">
-              <Chrome size={20} className="text-blue-500" /> Google
-            </button>
-            <button className="flex items-center justify-center gap-3 py-3 border border-gray-200 rounded-2xl hover:bg-gray-50 transition-all font-semibold text-sm">
-              <Github size={20} className="text-gray-800" /> Discord
-            </button>
-          </div>
-
-          <p className="mt-10 text-center text-sm text-nexus-grayLight font-medium">
+          <p className="mt-12 text-center text-sm text-nexus-grayLight font-medium">
             Problemas no acesso? <a href="mailto:suporte@nexusatemporal.com" className="text-nexus-orange font-bold">Contate o TI</a>
           </p>
         </div>

@@ -8,11 +8,11 @@ import {
   FileText, 
   Settings, 
   Users, 
-  Monitor, 
   Shapes, 
   Calendar,
   Layers
 } from 'lucide-react';
+import { NotificationType, Notification } from './types';
 
 export const COLORS = {
   primary: '#FF7300',
@@ -39,4 +39,41 @@ export const MOCK_USERS = [
   { id: '2', name: 'Maria Souza', role: 'Marketing', status: 'online', avatar: 'https://picsum.photos/seed/maria/100/100', email: 'maria@nexus.com' },
   { id: '3', name: 'Carlos Santos', role: 'CEO', status: 'busy', avatar: 'https://picsum.photos/seed/carlos/100/100', email: 'carlos@nexus.com' },
   { id: '4', name: 'Ana Costa', role: 'QA', status: 'offline', avatar: 'https://picsum.photos/seed/ana/100/100', email: 'ana@nexus.com' },
+];
+
+export const MOCK_NOTIFICATIONS: Notification[] = [
+  {
+    id: 'n1',
+    type: NotificationType.TASK_ASSIGNED,
+    title: 'Nova Tarefa Atribuída',
+    message: 'Carlos Santos atribuiu "Refatoração de API" a você.',
+    timestamp: '2 min atrás',
+    isRead: false,
+    avatar: 'https://picsum.photos/seed/carlos/32/32'
+  },
+  {
+    id: 'n2',
+    type: NotificationType.MENTION,
+    title: 'Você foi mencionado',
+    message: 'Maria Souza mencionou você no canal #marketing.',
+    timestamp: '15 min atrás',
+    isRead: false,
+    avatar: 'https://picsum.photos/seed/maria/32/32'
+  },
+  {
+    id: 'n3',
+    type: NotificationType.STATUS_CHANGED,
+    title: 'Sprint Nexus v1.0 Atualizada',
+    message: 'O status mudou para "Fase de Revisão Final".',
+    timestamp: '1 hora atrás',
+    isRead: true
+  },
+  {
+    id: 'n4',
+    type: NotificationType.SYSTEM,
+    title: 'Backup Concluído',
+    message: 'O cluster Nexus VPS realizou o backup diário com sucesso.',
+    timestamp: '3 horas atrás',
+    isRead: true
+  }
 ];

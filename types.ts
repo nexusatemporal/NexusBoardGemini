@@ -14,6 +14,23 @@ export enum UserRole {
   MARKETING = 'Marketing'
 }
 
+export enum NotificationType {
+  TASK_ASSIGNED = 'task_assigned',
+  MENTION = 'mention',
+  STATUS_CHANGED = 'status_changed',
+  SYSTEM = 'system'
+}
+
+export interface Notification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  message: string;
+  timestamp: string;
+  isRead: boolean;
+  avatar?: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -48,4 +65,13 @@ export interface Message {
   text: string;
   timestamp: string;
   attachments?: string[];
+  linkedTaskId?: string; // ID da tarefa vinculada a esta mensagem específica ou contexto
+}
+
+export interface Conversation {
+  id: string;
+  participants: string[];
+  lastMessage: string;
+  timestamp: string;
+  linkedTaskId?: string; // ID da tarefa vinculada a esta conversa inteira
 }
