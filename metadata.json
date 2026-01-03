@@ -1,0 +1,8 @@
+{
+  "name": "Nexus Atemporal - Core Board",
+  "description": "Uma plataforma integrada de gestão de tarefas, colaboração e IA, combinando as melhores funcionalidades do Notion, Affine, Miro e Airtable para equipes de alta performance.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
